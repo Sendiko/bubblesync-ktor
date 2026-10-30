@@ -24,9 +24,50 @@ Here's a list of features included in this project:
 | [Swagger](https://start.ktor.io/p/io.ktor/server-swagger) | Serves Swagger UI for your project |
 | [CORS](https://start.ktor.io/p/io.ktor/server-cors) | Enables Cross-Origin Resource Sharing (CORS) |
 
-## Authentication
-Register with `POST /api/auth/register` using a JSON body containing `email`, `password`, and `name`. Passwords must be 8-128 characters. Login with `POST /api/auth/login` using `email` and `password`; both endpoints return a Bearer access token and public user profile. Send the token in the `Authorization: Bearer <token>` header to access `GET /api/auth/me`.
+## API Documentation
+The OpenAPI 3 specification is in [`src/main/resources/documentation.yaml`](src/main/resources/documentation.yaml). The server exposes the Swagger UI route at `/openapi`.
 
+All API routes use the `/api` prefix. Register with `POST /api/auth/register` using `email`, `password`, and `name`; passwords must be 8-128 characters. Log in with `POST /api/auth/login`. Both return an access token and public user profile. Send the token as `Authorization: Bearer <accessToken>` to use protected routes. `GET /api/auth/me` remains available for compatibility; new clients can use `/api/users/me`.
+
+| Method | Path | Purpose | Auth |
+|--------|------|---------|------|
+| `POST` | `/api/auth/register` | Create an account | No |
+| `POST` | `/api/auth/login` | Issue an access token | No |
+| `GET` | `/api/auth/me` | Read token profile (compatibility route) | Yes |
+| `GET` | `/api/users/me` | Read current user profile | Yes |
+| `PATCH` | `/api/users/me` | Update current user's name | Yes |
+| `GET` | `/api/places` | List laundry places | Yes |
+| `POST` | `/api/places` | Create a laundry place | Yes |
+| `GET` | `/api/places/{id}` | Read a laundry place | Yes |
+| `PUT` | `/api/places/{id}` | Replace a laundry place | Yes |
+| `DELETE` | `/api/places/{id}` | Delete a laundry place | Yes |
+| `GET` | `/api/records` | List current user's records | Yes |
+| `POST` | `/api/records` | Create a record and its items | Yes |
+| `GET` | `/api/records/{id}` | Read a current user's record | Yes |
+| `PATCH` | `/api/records/{id}/status` | Change record status | Yes |
+| `DELETE` | `/api/records/{id}` | Delete a record and its items | Yes |
+
+### Laundry Records
+Record endpoints only return or modify records belonging to the authenticated user. New records start with status `DROPPED_OFF`; valid statuses are `DROPPED_OFF`, `WASHING`, `READY`, and `PICKED_UP`. Record creation requires an existing `placeId`. `dropOffDateTime` is an ISO-8601 local date-time without a time-zone offset. `amountPaid` is a decimal string with at most two fractional digits, such as `"25.50"`, to preserve monetary precision. Item quantities must be between 1 and 1000, with up to 100 items per record.
+
+Example request for `POST /api/records`:
+
+```json
+{
+	"placeId": "8fe138c7-41e2-4286-a9c6-40c119e31a5d",
+	"dropOffDateTime": "2026-10-30T12:15:00",
+	"amountPaid": "25.50",
+	"bulkPhotoUrl": null,
+	"items": [
+		{ "name": "Shirt", "quantity": 2 },
+		{ "name": "Towel" }
+	]
+}
+```
+
+Deleting a record also deletes its items. A laundry place referenced by records cannot be deleted until those records are removed.
+
+### Security Configuration
 Passwords are stored as salted PBKDF2 hashes. Set `JWT_SECRET` to a random secret of at least 32 characters outside local development; the value in `application.yaml` is only a development fallback. `JWT_ISSUER` and `JWT_AUDIENCE` can also be overridden through environment variables.
 
 ```bash

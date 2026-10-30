@@ -6,6 +6,7 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.OpenApiDocSource
 import io.ktor.server.http.content.*
 
 fun Application.configureRouting() {
@@ -19,7 +20,9 @@ fun Application.configureRouting() {
         anyHost()
     }
     routing {
-        swaggerUI(path = "openapi") {}
+        swaggerUI(path = "openapi") {
+            source = OpenApiDocSource.File("documentation.yaml")
+        }
         get("/") {
             call.respondText("Hello, World!")
         }

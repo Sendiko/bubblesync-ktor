@@ -1,23 +1,602 @@
 openapi: "3.0.3"
 info:
-  title: "Application API"
-  description: "Application API"
+  title: "BubbleSync API"
+  description: "Authentication, user profile, laundry place, and laundry record endpoints."
   version: "1.0.0"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://localhost:8080"
+tags:
+  - name: "Authentication"
+  - name: "Users"
+  - name: "Laundry places"
+  - name: "Laundry records"
 paths:
   /:
     get:
-      description: "Hello World!"
+      summary: "Health greeting"
       responses:
         "200":
-          description: "OK"
+          description: "Server is responding."
           content:
             text/plain:
               schema:
                 type: "string"
-              examples:
-                Example#1:
-                  value: "Hello World!"
+  /api/auth/register:
+    post:
+      tags: ["Authentication"]
+      summary: "Register an account"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: "Account created and access token issued."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: "Invalid email, password, or name."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: "An account with this email already exists."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/auth/login:
+    post:
+      tags: ["Authentication"]
+      summary: "Log in"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Access token issued."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: "Invalid email or password."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/auth/me:
+    get:
+      tags: ["Authentication"]
+      summary: "Get the profile from the access token"
+      description: "Compatibility endpoint. New clients can use GET /api/users/me."
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Authenticated profile."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: "Missing or invalid access token."
+  /api/users/me:
+    get:
+      tags: ["Users"]
+      summary: "Get the authenticated user's profile"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Current user profile."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "User no longer exists."
+    patch:
+      tags: ["Users"]
+      summary: "Update the authenticated user's name"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: "Updated user profile."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: "Name must contain 1 to 100 characters after trimming."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "User no longer exists."
+  /api/places:
+    get:
+      tags: ["Laundry places"]
+      summary: "List laundry places"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Laundry places."
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/LaundryPlaceResponse"
+        "401":
+          description: "Missing or invalid access token."
+    post:
+      tags: ["Laundry places"]
+      summary: "Create a laundry place"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaundryPlaceRequest"
+      responses:
+        "201":
+          description: "Laundry place created."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryPlaceResponse"
+        "400":
+          description: "Invalid laundry place details."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: "Missing or invalid access token."
+  /api/places/{id}:
+    parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "Laundry place UUID."
+        schema:
+          type: "string"
+          format: "uuid"
+    get:
+      tags: ["Laundry places"]
+      summary: "Get a laundry place"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Laundry place."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryPlaceResponse"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Laundry place not found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    put:
+      tags: ["Laundry places"]
+      summary: "Replace a laundry place"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaundryPlaceRequest"
+      responses:
+        "200":
+          description: "Updated laundry place."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryPlaceResponse"
+        "400":
+          description: "Invalid laundry place details."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Laundry place not found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      tags: ["Laundry places"]
+      summary: "Delete a laundry place"
+      description: "The database prevents deletion while laundry records reference the place."
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Laundry place deleted."
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Laundry place not found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: "Database constraint prevented deletion because records reference this place."
+  /api/records:
+    get:
+      tags: ["Laundry records"]
+      summary: "List the authenticated user's records"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Records belonging to the authenticated user."
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/LaundryRecordResponse"
+        "401":
+          description: "Missing or invalid access token."
+    post:
+      tags: ["Laundry records"]
+      summary: "Create a laundry record"
+      description: "The record is associated with the authenticated user and starts with status DROPPED_OFF."
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLaundryRecordRequest"
+      responses:
+        "201":
+          description: "Laundry record and its items created."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryRecordResponse"
+        "400":
+          description: "Invalid record, amount, date-time, or item details."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Laundry place not found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/records/{id}:
+    parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "Laundry record UUID."
+        schema:
+          type: "string"
+          format: "uuid"
+    get:
+      tags: ["Laundry records"]
+      summary: "Get one of the authenticated user's records"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Laundry record including its items."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryRecordResponse"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Record not found or does not belong to the authenticated user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      tags: ["Laundry records"]
+      summary: "Delete one of the authenticated user's records"
+      description: "Associated laundry items are deleted with the record."
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: "Laundry record deleted."
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Record not found or does not belong to the authenticated user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /api/records/{id}/status:
+    parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        description: "Laundry record UUID."
+        schema:
+          type: "string"
+          format: "uuid"
+    patch:
+      tags: ["Laundry records"]
+      summary: "Update a record's status"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLaundryRecordStatusRequest"
+      responses:
+        "200":
+          description: "Updated laundry record."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaundryRecordResponse"
+        "400":
+          description: "Status must be DROPPED_OFF, WASHING, READY, or PICKED_UP."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: "Missing or invalid access token."
+        "404":
+          description: "Record not found or does not belong to the authenticated user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
-  schemas: {}
+  securitySchemes:
+    BearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+  schemas:
+    ApiError:
+      type: "object"
+      required: ["error"]
+      properties:
+        error:
+          type: "string"
+    RegisterRequest:
+      type: "object"
+      required: ["email", "password", "name"]
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          maxLength: 254
+        password:
+          type: "string"
+          minLength: 8
+          maxLength: 128
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 100
+    LoginRequest:
+      type: "object"
+      required: ["email", "password"]
+      properties:
+        email:
+          type: "string"
+          format: "email"
+        password:
+          type: "string"
+          minLength: 8
+          maxLength: 128
+    UserResponse:
+      type: "object"
+      required: ["id", "email", "name"]
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        email:
+          type: "string"
+          format: "email"
+        name:
+          type: "string"
+    AuthResponse:
+      type: "object"
+      required: ["accessToken", "tokenType", "expiresIn", "user"]
+      properties:
+        accessToken:
+          type: "string"
+        tokenType:
+          type: "string"
+          example: "Bearer"
+        expiresIn:
+          type: "integer"
+          format: "int64"
+          description: "Token lifetime in seconds."
+        user:
+          $ref: "#/components/schemas/UserResponse"
+    UpdateUserRequest:
+      type: "object"
+      required: ["name"]
+      properties:
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 100
+    LaundryPlaceRequest:
+      type: "object"
+      required: ["name", "location"]
+      properties:
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 255
+        location:
+          type: "string"
+          minLength: 1
+          maxLength: 1000
+        contactNumber:
+          type: "string"
+          nullable: true
+          maxLength: 50
+    LaundryPlaceResponse:
+      allOf:
+        - $ref: "#/components/schemas/LaundryPlaceRequest"
+        - type: "object"
+          required: ["id", "createdAt"]
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            createdAt:
+              type: "string"
+              example: "2026-10-30T12:15:00"
+    CreateLaundryItemRequest:
+      type: "object"
+      required: ["name"]
+      properties:
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 255
+        quantity:
+          type: "integer"
+          minimum: 1
+          maximum: 1000
+          default: 1
+        itemPhotoUrl:
+          type: "string"
+          nullable: true
+          maxLength: 2048
+    CreateLaundryRecordRequest:
+      type: "object"
+      required: ["placeId", "dropOffDateTime", "amountPaid"]
+      properties:
+        placeId:
+          type: "string"
+          format: "uuid"
+        dropOffDateTime:
+          type: "string"
+          description: "ISO-8601 local date-time without a time-zone offset."
+          example: "2026-10-30T12:15:00"
+        amountPaid:
+          type: "string"
+          description: "Nonnegative decimal amount with at most two fractional digits, sent as a string to preserve precision."
+          example: "25.50"
+        bulkPhotoUrl:
+          type: "string"
+          nullable: true
+          maxLength: 2048
+        items:
+          type: "array"
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/CreateLaundryItemRequest"
+    UpdateLaundryRecordStatusRequest:
+      type: "object"
+      required: ["status"]
+      properties:
+        status:
+          type: "string"
+          enum: ["DROPPED_OFF", "WASHING", "READY", "PICKED_UP"]
+    LaundryRecordItemResponse:
+      type: "object"
+      required: ["id", "name", "quantity", "itemPhotoUrl"]
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        quantity:
+          type: "integer"
+        itemPhotoUrl:
+          type: "string"
+          nullable: true
+    LaundryRecordResponse:
+      type: "object"
+      required:
+        - "id"
+        - "userId"
+        - "placeId"
+        - "dropOffDateTime"
+        - "amountPaid"
+        - "status"
+        - "bulkPhotoUrl"
+        - "items"
+        - "createdAt"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        userId:
+          type: "string"
+          format: "uuid"
+        placeId:
+          type: "string"
+          format: "uuid"
+        dropOffDateTime:
+          type: "string"
+          example: "2026-10-30T12:15:00"
+        amountPaid:
+          type: "string"
+          example: "25.50"
+        status:
+          type: "string"
+          enum: ["DROPPED_OFF", "WASHING", "READY", "PICKED_UP"]
+        bulkPhotoUrl:
+          type: "string"
+          nullable: true
+        items:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/LaundryRecordItemResponse"
+        createdAt:
+          type: "string"
+          example: "2026-10-30T12:15:00"
