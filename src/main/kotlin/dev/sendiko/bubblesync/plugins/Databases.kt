@@ -3,6 +3,8 @@ package dev.sendiko.bubblesync.plugins
 import dev.sendiko.bubblesync.core.config.jwtSettings
 import dev.sendiko.bubblesync.features.auth.UserService
 import dev.sendiko.bubblesync.features.auth.authRoutes
+import dev.sendiko.bubblesync.features.places.LaundryPlaceService
+import dev.sendiko.bubblesync.features.places.laundryPlaceRoutes
 import dev.sendiko.bubblesync.features.users.userRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.routing
@@ -23,8 +25,10 @@ suspend fun Application.configureDatabases() {
     val userService = UserService(database).also {
         it.createSchema()
     }
+    val laundryPlaceService = LaundryPlaceService(database)
     routing {
         authRoutes(userService, jwtSettings())
         userRoutes(userService)
+        laundryPlaceRoutes(laundryPlaceService)
     }
 }
