@@ -1,0 +1,28 @@
+ktor:
+  deployment:
+    port: 8080
+  application:
+    modules:
+      - dev.sendiko.HttpKt.configureHttp
+      - dev.sendiko.SerializationKt.configureSerialization
+      - dev.sendiko.SecurityKt.configureSecurity
+      - dev.sendiko.ExposedKt.configureExposed
+      - dev.sendiko.KoinKt.configureKoin
+      - dev.sendiko.RoutingKt.configureRouting
+database:
+  host: localhost
+  port: 3306
+  name: bubblesync
+  user: bubblesync
+  password: bubblesync
+storage:
+  endpoint: http://localhost:9000
+  accessKey: minioadmin
+  secretKey: minioadmin
+  bucket: laundry-photos
+jwt:
+  secret: local-development-only-secret-change-before-deploy-00000000
+  issuer: bubblesync-api
+  audience: bubblesync-clients
+  realm: bubblesync
+  expiresInSeconds: 3600
