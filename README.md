@@ -75,6 +75,23 @@ export JWT_SECRET="$(openssl rand -base64 48)"
 ```
 
 ## Building & Running
+For a bare-metal deployment with MySQL already running on the host, do not start the MySQL service from `docker compose`. Configure the application to use the existing database, make sure the `bubblesync` user has access to the `bubblesync` database, then run:
+
+```bash
+cp .env.example .env
+# Edit .env and set MYSQL_PASSWORD, JWT_SECRET, and MinIO credentials.
+set -a
+. ./.env
+set +a
+
+./gradlew build
+./gradlew runShadow
+```
+
+The API listens on port `8080`. `MYSQL_HOST=localhost` is correct when the API runs directly on the Linux host. If the API later runs inside Docker, use the database service hostname instead, such as `mysql`.
+
+The included `docker-compose.yml` starts a separate MySQL container for local development. Do not run `docker compose up -d` alongside a host MySQL instance using the same port unless you stop one of them or change the published port.
+
 To build or run the project, use one of the following tasks:
 
 
