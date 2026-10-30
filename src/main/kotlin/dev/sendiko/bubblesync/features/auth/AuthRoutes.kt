@@ -1,5 +1,6 @@
-package dev.sendiko
+package dev.sendiko.bubblesync.features.auth
 
+import dev.sendiko.bubblesync.core.config.JwtSettings
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.HttpStatusCode

@@ -3,12 +3,11 @@ ktor:
     port: 8080
   application:
     modules:
-      - dev.sendiko.HttpKt.configureHttp
-      - dev.sendiko.SerializationKt.configureSerialization
-      - dev.sendiko.SecurityKt.configureSecurity
-      - dev.sendiko.ExposedKt.configureExposed
-      - dev.sendiko.KoinKt.configureKoin
-      - dev.sendiko.RoutingKt.configureRouting
+      - dev.sendiko.bubblesync.plugins.SerializationKt.configureSerialization
+      - dev.sendiko.bubblesync.plugins.SecurityKt.configureSecurity
+      - dev.sendiko.bubblesync.plugins.DatabasesKt.configureDatabases
+      - dev.sendiko.bubblesync.di.KoinModulesKt.configureKoinModules
+      - dev.sendiko.bubblesync.plugins.RoutingKt.configureRouting
 database:
   host: localhost
   port: 3306

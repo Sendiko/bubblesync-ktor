@@ -1,4 +1,4 @@
-package dev.sendiko
+package dev.sendiko.bubblesync.features.auth
 
 import java.security.MessageDigest
 import java.security.SecureRandom

@@ -1,5 +1,6 @@
-package dev.sendiko
+package dev.sendiko.bubblesync
 
+import dev.sendiko.bubblesync.features.auth.AuthResponse
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
@@ -12,9 +13,7 @@ class ServerTest {
 
     @Test
     fun `test root endpoint`() = testApplication {
-        // loads default configuration
         configure()
-        // verify server root returns 200
         assertEquals(HttpStatusCode.OK, client.get("/").status)
     }
 
@@ -54,5 +53,4 @@ class ServerTest {
         }
         assertEquals(HttpStatusCode.OK, profile.status)
     }
-
 }

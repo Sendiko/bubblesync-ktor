@@ -1,12 +1,13 @@
-package dev.sendiko
+package dev.sendiko.bubblesync.di
 
+import dev.sendiko.bubblesync.core.utils.HelloService
 import io.ktor.server.application.*
 import io.minio.MinioClient
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-fun Application.configureKoin() {
+fun Application.configureKoinModules() {
     val config = environment.config
     install(Koin) {
         slf4jLogger()

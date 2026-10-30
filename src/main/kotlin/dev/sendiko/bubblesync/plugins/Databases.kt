@@ -1,10 +1,13 @@
-package dev.sendiko
+package dev.sendiko.bubblesync.plugins
 
+import dev.sendiko.bubblesync.core.config.jwtSettings
+import dev.sendiko.bubblesync.features.auth.UserService
+import dev.sendiko.bubblesync.features.auth.authRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.routing
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 
-suspend fun Application.configureExposed() {
+suspend fun Application.configureDatabases() {
     val config = environment.config
     val databaseHost = System.getenv("MYSQL_HOST") ?: config.property("database.host").getString()
     val databasePort = System.getenv("MYSQL_PORT") ?: config.property("database.port").getString()
