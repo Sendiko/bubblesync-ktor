@@ -1,6 +1,7 @@
 package dev.sendiko.bubblesync.features.auth
 
 import dev.sendiko.bubblesync.core.config.JwtSettings
+import dev.sendiko.bubblesync.features.users.UserResponse
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.HttpStatusCode
@@ -22,9 +23,6 @@ data class RegisterRequest(val email: String, val password: String, val name: St
 
 @Serializable
 data class LoginRequest(val email: String, val password: String)
-
-@Serializable
-data class UserResponse(val id: String, val email: String, val name: String)
 
 @Serializable
 data class AuthResponse(
@@ -91,6 +89,7 @@ internal fun Route.authRoutes(userService: UserService, jwtSettings: JwtSettings
                 )
             }
         }
+
     }
 }
 

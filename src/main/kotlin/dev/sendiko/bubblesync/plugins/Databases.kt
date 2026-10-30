@@ -3,6 +3,7 @@ package dev.sendiko.bubblesync.plugins
 import dev.sendiko.bubblesync.core.config.jwtSettings
 import dev.sendiko.bubblesync.features.auth.UserService
 import dev.sendiko.bubblesync.features.auth.authRoutes
+import dev.sendiko.bubblesync.features.users.userRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.routing
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -24,5 +25,6 @@ suspend fun Application.configureDatabases() {
     }
     routing {
         authRoutes(userService, jwtSettings())
+        userRoutes(userService)
     }
 }

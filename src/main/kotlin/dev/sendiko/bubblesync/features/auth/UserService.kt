@@ -63,6 +63,27 @@ class UserService(private val database: R2dbcDatabase) {
             .singleOrNull()
     }
 
+    suspend fun findById(id: String): UserAccount? = suspendTransaction(database) {
+        Users.selectAll()
+            .where { Users.id eq id }
+            .map { it.toUserAccount() }
+            .singleOrNull()
+    }
+
+    suspend fun updateName(id: String, name: String): UserAccount? = suspendTransaction(database) {
+        val updatedRows = Users.update({ Users.id eq id }) {
+            it[Users.name] = name
+        }
+        if (updatedRows == 0) {
+            null
+        } else {
+            Users.selectAll()
+                .where { Users.id eq id }
+                .map { it.toUserAccount() }
+                .singleOrNull()
+        }
+    }
+
     private fun ResultRow.toUserAccount() = UserAccount(
         id = this[Users.id],
         email = this[Users.email],

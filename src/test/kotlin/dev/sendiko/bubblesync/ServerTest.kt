@@ -1,6 +1,7 @@
 package dev.sendiko.bubblesync
 
 import dev.sendiko.bubblesync.features.auth.AuthResponse
+import dev.sendiko.bubblesync.features.users.UserResponse
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
@@ -48,9 +49,24 @@ class ServerTest {
         }
         assertEquals(HttpStatusCode.OK, login.status)
 
-        val profile = client.get("/api/auth/me") {
+        val profile = client.get("/api/users/me") {
             header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
         }
         assertEquals(HttpStatusCode.OK, profile.status)
+
+        val invalidUpdate = client.patch("/api/users/me") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"name":"  "}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, invalidUpdate.status)
+
+        val update = client.patch("/api/users/me") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"name":"Updated User"}""")
+        }
+        assertEquals(HttpStatusCode.OK, update.status)
+        assertEquals("Updated User", Json.decodeFromString<UserResponse>(update.bodyAsText()).name)
     }
 }
