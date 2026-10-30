@@ -31,7 +31,7 @@ class UserService(private val database: R2dbcDatabase) {
 
     suspend fun createSchema() {
         suspendTransaction(database) {
-            SchemaUtils.create(Users)
+            SchemaUtils.create(Users, LaundryPlaces, LaundryRecords, LaundryItems)
         }
     }
 
