@@ -2,6 +2,7 @@ package dev.sendiko.bubblesync
 
 import dev.sendiko.bubblesync.features.auth.AuthResponse
 import dev.sendiko.bubblesync.features.places.LaundryPlaceResponse
+import dev.sendiko.bubblesync.features.records.LaundryRecordResponse
 import dev.sendiko.bubblesync.features.users.UserResponse
 import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
@@ -90,6 +91,50 @@ class ServerTest {
         }
         assertEquals(HttpStatusCode.OK, updatePlace.status)
         assertEquals("Spin Cycle Plus", Json.decodeFromString<LaundryPlaceResponse>(updatePlace.bodyAsText()).name)
+
+        val createRecord = client.post("/api/records") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+            contentType(ContentType.Application.Json)
+            setBody(
+                """{"placeId":"${place.id}","dropOffDateTime":"2026-10-30T12:15:00","amountPaid":"25.50","items":[{"name":"Shirt","quantity":2},{"name":"Towel"}]}"""
+            )
+        }
+        assertEquals(HttpStatusCode.Created, createRecord.status)
+        val record = Json.decodeFromString<LaundryRecordResponse>(createRecord.bodyAsText())
+        assertEquals("DROPPED_OFF", record.status)
+        assertEquals(2, record.items.size)
+        assertEquals("25.50", record.amountPaid)
+
+        val getRecord = client.get("/api/records/${record.id}") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+        }
+        assertEquals(HttpStatusCode.OK, getRecord.status)
+        assertEquals(2, Json.decodeFromString<LaundryRecordResponse>(getRecord.bodyAsText()).items.size)
+
+        val records = client.get("/api/records") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+        }
+        assertEquals(1, Json.decodeFromString<List<LaundryRecordResponse>>(records.bodyAsText()).size)
+
+        val invalidStatus = client.patch("/api/records/${record.id}/status") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"status":"UNKNOWN"}""")
+        }
+        assertEquals(HttpStatusCode.BadRequest, invalidStatus.status)
+
+        val updateRecord = client.patch("/api/records/${record.id}/status") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"status":"WASHING"}""")
+        }
+        assertEquals(HttpStatusCode.OK, updateRecord.status)
+        assertEquals("WASHING", Json.decodeFromString<LaundryRecordResponse>(updateRecord.bodyAsText()).status)
+
+        val deleteRecord = client.delete("/api/records/${record.id}") {
+            header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
+        }
+        assertEquals(HttpStatusCode.NoContent, deleteRecord.status)
 
         val deletePlace = client.delete("/api/places/${place.id}") {
             header(HttpHeaders.Authorization, "Bearer ${registeredAccount.accessToken}")
